@@ -1,7 +1,9 @@
 'use client';
 import Container from '@/components/Container';
 import Navbar from '@/components/Navbar';
+import WeatherIcon from '@/components/WeatherIcon';
 import { convertKelvinToCelsius } from '@/utils/convertKelvinToCelcius';
+import { getDayOrNightIcon } from '@/utils/getDayOrNightIcon';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
@@ -66,13 +68,14 @@ export default function Home() {
     queryKey: ['repoData'],
     queryFn: async () => {
       const { data } = await axios.get(
-        `https://api.openweathermap.org/data/2.5/forecast?q=joao%20pessoa&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}&cnt=56`
+        `https://api.openweathermap.org/data/2.5/forecast?q=joao%20pessoa&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}&cnt=56&lang=pt_br`
       );
       return data;
     }
   });
 
   const firstData = data?.list[0];
+  // console.log(data);
 
   if (isLoading)
     return (
@@ -86,8 +89,8 @@ export default function Home() {
     <div className="flex flex-col gap-4 bg-gray-100 min-h-screen">
       <Navbar />
       <main className="px-3 max-w-7xl mx-auto flex flex-col gap-9  w-full  pb-10 pt-4">
-        <section className='space-y-4'>
-          <div className='space-y-2'>
+        <section className="space-y-4">
+          <div className="space-y-2">
             <h2 className="flex gap-1 text-2xl items-end">
               <p> {format(parseISO(firstData?.dt_txt ?? ''), 'EEEE')}</p>
               <p className="text-lg">
@@ -112,6 +115,21 @@ export default function Home() {
                     {convertKelvinToCelsius(firstData?.main.temp_max ?? 0)}°C ↑
                   </span>
                 </p>
+              </div>
+              <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between bg-gray-200">
+                {data?.list.map((d, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col justify-between gap-2 items-center text-xs font-semibold"
+                  >
+                    <p className='whitespace-nowrap'>{format(parseISO(d.dt_txt), 'H:mm')}</p>
+
+                    {/* <WeatherIcon iconName={d.weather[0].icon}/> */}
+                    <WeatherIcon iconName={getDayOrNightIcon(d.weather[0].icon, d.dt_txt)}/>
+                    <p>{convertKelvinToCelsius(d?.main.temp ?? 0)}°C</p>
+                    
+                  </div>
+                ))}
               </div>
             </Container>
           </div>
