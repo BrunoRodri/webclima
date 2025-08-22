@@ -1,6 +1,6 @@
 /** @format */
 
-import { atom } from "jotai";
+import { atom } from 'jotai';
 
 export const placeAtom = atom("João Pessoa");
 

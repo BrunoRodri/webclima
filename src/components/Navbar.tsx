@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 import React, { useState } from 'react';
 import { MdLocationOn, MdMyLocation, MdWbSunny } from 'react-icons/md';
@@ -5,7 +6,6 @@ import SearchBox from './SearchBox';
 import axios from 'axios';
 import { useAtom } from 'jotai';
 import { placeAtom, loadingCityAtom } from '@/app/atom';
-import { count } from 'console';
 
 type Props = { location?: string };
 
@@ -15,12 +15,12 @@ export default function Navbar({ location }: Props) {
   const [city, setCity] = useState('');
   const [error, setError] = useState('');
 
-  
-  const [suggestions, setSuggestions] = useState<{ name: string; country: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<
+    { name: string; country: string }[]
+  >([]);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [place, setPlace] = useAtom(placeAtom);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setLoadingCity] = useAtom(loadingCityAtom);
 
   async function handleInputChange(value: string) {
@@ -35,8 +35,7 @@ export default function Navbar({ location }: Props) {
         const suggestions = response.data.list.map((item: any) => ({
           name: item.name,
           country: item.sys.country
-        })
-        );
+        }));
         setSuggestions(suggestions);
         setError('');
         setShowSuggestions(true);
@@ -72,36 +71,78 @@ export default function Navbar({ location }: Props) {
     }
   }
 
+  function handleCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async position => {
+        const { latitude, longitude } = position.coords;
+        try {
+          setLoadingCity(true);
+          const response = await axios.get(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`
+          );
+          setTimeout(() => {
+            setLoadingCity(false);
+            setPlace(response.data.name);
+          }, 500);
+        } catch (error) {
+          setLoadingCity(false);
+        }
+      });
+    }
+  }
+
   return (
-    <nav className="shadow-sm sticky top-0 left-0 z-50 bg-white">
-      <div className="h-[80px] w-full flex justify-between items-center max-w-7xl px-3 mx-auto">
-        <span className="flex items-center justify-center gap-2">
-          <h2 className="text-gray-500 text-3xl">WebClima</h2>
-          <MdWbSunny className="text-3xl mt-1 text-yellow-300" />
-        </span>
-        {/* */}
-        <section className="flex items-center gap-2">
-          <MdMyLocation className="text-2xl text-gray-400 hover:opacity-80 cursor-pointer" />
-          <MdLocationOn className="text-2xl" />
-          <p className="text-slate-900/80 text-sm"> {location} </p>
-          <div className="relative">
-            <SearchBox
-              value={city}
-              onSubmit={handleSubmitSearch}
-              onChange={e => handleInputChange(e.target.value)}
+    <>
+      <nav className="shadow-sm sticky top-0 left-0 z-50 bg-white">
+        <div className="h-[80px] w-full flex justify-between items-center max-w-7xl px-3 mx-auto">
+          <span className="flex items-center justify-center gap-2">
+            <h2 className="text-gray-500 text-3xl">WebClima</h2>
+            <MdWbSunny className="text-3xl mt-1 text-yellow-300" />
+          </span>
+          {/* */}
+          <section className="flex items-center gap-2">
+            <MdMyLocation
+              onClick={handleCurrentLocation}
+              className="text-2xl text-gray-400 hover:opacity-80 cursor-pointer"
             />
-            <SuggestionBox
-              {...{
-                showSuggestions,
-                suggestions,
-                handleSuggestionClick,
-                error
-              }}
-            />
-          </div>
-        </section>
-      </div>
-    </nav>
+            <MdLocationOn className="text-2xl" />
+            <p className="text-slate-900/80 text-sm"> {location} </p>
+            <div className="relative hidden md:flex">
+              <SearchBox
+                value={city}
+                onSubmit={handleSubmitSearch}
+                onChange={e => handleInputChange(e.target.value)}
+              />
+              <SuggestionBox
+                {...{
+                  showSuggestions,
+                  suggestions,
+                  handleSuggestionClick,
+                  error
+                }}
+              />
+            </div>
+          </section>
+        </div>
+      </nav>
+      <section className="flex max-w-7xl px-3 md:hidden">
+        <div className="relative">
+          <SearchBox
+            value={city}
+            onSubmit={handleSubmitSearch}
+            onChange={e => handleInputChange(e.target.value)}
+          />
+          <SuggestionBox
+            {...{
+              showSuggestions,
+              suggestions,
+              handleSuggestionClick,
+              error
+            }}
+          />
+        </div>
+      </section>
+    </>
   );
 }
 
