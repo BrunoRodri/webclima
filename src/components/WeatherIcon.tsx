@@ -4,8 +4,6 @@ import React from "react";
 import Image from "next/image";
 import { cn } from "@/utils/cn";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-type Props = {};
 
 export default function WeatherIcon(
   props: React.HTMLProps<HTMLDivElement> & { iconName: string }
