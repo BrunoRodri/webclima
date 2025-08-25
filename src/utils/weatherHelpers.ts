@@ -22,6 +22,11 @@ export function getFirstDataForEachDate(list: any[], uniqueDates: string[]) {
   });
 }
 
+export function formatLocalHour(dt: number, timezone: number) {
+  const localTimestamp = dt + timezone;
+  return format(fromUnixTime(localTimestamp), 'H:mm');
+}
+
 export function formatDay(dt_txt: string) {
   return format(parseISO(dt_txt), 'EEEE', { locale: ptBR });
 }

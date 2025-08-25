@@ -23,21 +23,21 @@ export default function ForecastWeatherDetail(
   return (
     <Container className="gap-4">
       {/* left */}
-      <section className=" flex gap-4 items-center px-4  ">
+      <section className=" flex gap-4 items-center xl:px-4 pl-2  ">
         <div className=" flex flex-col gap-1 items-center">
-          <WeatherIcon iconName={weatherIcon} />
+          <WeatherIcon iconName={weatherIcon.replace(/.$/, "d")} />
           <p>{date}</p>
-          <p className="text-sm capitalize text-center">{day} </p>
+          <p className="text-sm capitalize text-center font-semibold">{day} </p>
         </div>
 
         {/*  */}
-        <div className="flex flex-col px-4">
+        <div className="flex flex-col xl:px-4 gap-2">
           <span className="text-5xl">{convertKelvinToCelsius(temp ?? 0)}°</span>
           <p className="text-xs space-x-1 whitespace-nowrap">
             <span> Feels like</span>
             <span>{convertKelvinToCelsius(feels_like ?? 0)}°</span>
           </p>
-          <p className="capitalize"> {description}</p>
+          <p className="capitalize font-semibold"> {description}</p>
         </div>
       </section>
       {/* right */}

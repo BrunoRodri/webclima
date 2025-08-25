@@ -19,7 +19,7 @@ export default function WeatherDetails(props: WeatherDetailProps) {
   } = props;
 
   return (
-    <>
+    <div className="flex gap-6 md:gap-12 lg:gap-20 py-4 text-center w-full  justify-between">
       <SingleWeatherDetail
         icon={<LuEye />}
         information="Visibilidade"
@@ -50,7 +50,7 @@ export default function WeatherDetails(props: WeatherDetailProps) {
         information="Por do sol"
         value={sunset}
       />
-    </>
+    </div>
   );
 }
 

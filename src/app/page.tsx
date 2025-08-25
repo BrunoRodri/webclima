@@ -9,13 +9,20 @@ import { convertWindSpeed } from '@/utils/convertWindSpeed';
 import { getDayOrNightIcon } from '@/utils/getDayOrNightIcon';
 import { metersToKilometers } from '@/utils/metersToKilometers';
 import { useQuery } from '@tanstack/react-query';
-import { format, fromUnixTime, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAtom } from 'jotai';
 import { loadingCityAtom, placeAtom } from './atom';
 import { useEffect } from 'react';
 import { getForecastWeather } from '@/services/weatherService';
 import type { WeatherData } from '@/types/weather';
+import {
+  getUniqueDates,
+  getFirstDataForEachDate,
+  formatLocalHour,
+  formatDay,
+  formatSunTime
+} from '@/utils/weatherHelpers';
 
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -36,28 +43,12 @@ export default function Home() {
 
   const firstData = data?.list[0];
 
-  const uniqueDates = [
-    ...new Set(
-      data?.list.map(
-        entry => new Date(entry.dt * 1000).toISOString().split('T')[0]
-      )
-    )
-  ];
+  const uniqueDates = getUniqueDates(data?.list ?? []);
 
-  function formatLocalHour(dt: number, timezone: number) {
-    // dt = timestamp em segundos
-    // timezone = diferença em segundos do UTC
-    const localTimestamp = dt + timezone;
-    return format(fromUnixTime(localTimestamp), 'H:mm');
-  }
-
-  const firstDataForEachDate = uniqueDates.map(date => {
-    return data?.list.find(entry => {
-      const entryDate = new Date(entry.dt * 1000).toISOString().split('T')[0];
-      const entryTime = new Date(entry.dt * 1000).getHours();
-      return entryDate === date && entryTime >= 6;
-    });
-  });
+  const firstDataForEachDate = getFirstDataForEachDate(
+    data?.list ?? [],
+    uniqueDates
+  );
 
   if (isLoading)
     return (
@@ -78,11 +69,7 @@ export default function Home() {
             <section className="space-y-4">
               <div className="space-y-2">
                 <h2 className="flex gap-1 text-2xl items-end capitalize font-semibold">
-                  <p>
-                    {format(parseISO(firstData?.dt_txt ?? ''), 'EEEE', {
-                      locale: ptBR
-                    })}
-                  </p>
+                  <p>{formatDay(firstData?.dt_txt ?? '')}</p>
                   <p className="text-lg ">
                     {' '}
                     {format(parseISO(firstData?.dt_txt ?? ''), '(dd.MM.yyyy)')}
@@ -123,7 +110,8 @@ export default function Home() {
                         <WeatherIcon
                           iconName={getDayOrNightIcon(
                             d.weather[0].icon,
-                            d.dt_txt
+                            d.dt,
+                            data.city.timezone ?? 0
                           )}
                         />
                         <p>{convertKelvinToCelsius(d?.main.temp ?? 0)}°C</p>
@@ -135,30 +123,25 @@ export default function Home() {
               <div className="flex gap-4">
                 {/* Left */}
                 <Container className="w-fit justify-center flex-col px-4 items-center bg-amber-300">
-                  <p className="capitalize text-center">
+                  <p className="capitalize text-center font-semibold">
                     {firstData?.weather[0].description}
                   </p>
                   <WeatherIcon
                     iconName={getDayOrNightIcon(
                       firstData?.weather[0].icon ?? '',
-                      firstData?.dt_txt ?? ''
+                      firstData?.dt ?? 0,
+                      data?.city?.timezone ?? 0
                     )}
                   />
                 </Container>
-                <Container className="px-6 gap-4 justify-between overflow-x-auto">
+                <Container className="px-6 gap-4 justify-between overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-200 custom-scroll">
                   <WeatherDetails
                     visability={metersToKilometers(firstData?.visibility ?? 0)}
                     airPressure={`${firstData?.main.pressure} hPa`}
                     humidity={`${firstData?.main.humidity}%`}
                     windSpeed={convertWindSpeed(firstData?.wind.speed ?? 0)}
-                    sunrise={format(
-                      fromUnixTime(data?.city.sunrise ?? 0),
-                      'HH:mm'
-                    )}
-                    sunset={format(
-                      fromUnixTime(data?.city.sunset ?? 0),
-                      'HH:mm'
-                    )}
+                    sunrise={formatSunTime(data?.city.sunrise ?? 0)}
+                    sunset={formatSunTime(data?.city.sunset ?? 0)}
                   />
                 </Container>
                 {/* Right  */}
@@ -184,14 +167,8 @@ export default function Home() {
                   temp_min={d?.main.temp_min ?? 0}
                   airPressure={`${d?.main.pressure} hPa `}
                   humidity={`${d?.main.humidity}% `}
-                  sunrise={format(
-                    fromUnixTime(data?.city.sunrise ?? 1702517657),
-                    'H:mm'
-                  )}
-                  sunset={format(
-                    fromUnixTime(data?.city.sunset ?? 1702517657),
-                    'H:mm'
-                  )}
+                  sunrise={formatSunTime(data?.city.sunrise ?? 1702517657)}
+                  sunset={formatSunTime(data?.city.sunset ?? 1702517657)}
                   visability={`${metersToKilometers(d?.visibility ?? 10000)} `}
                   windSpeed={`${convertWindSpeed(d?.wind.speed ?? 1.64)} `}
                 />
