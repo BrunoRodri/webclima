@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MdLocationOn, MdMyLocation, MdWbSunny } from 'react-icons/md';
 import SearchBox from './SearchBox';
 import { useAtom } from 'jotai';
@@ -23,6 +23,13 @@ export default function Navbar({}: Props) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [place, setPlace] = useAtom(placeAtom);
   const [_, setLoadingCity] = useAtom(loadingCityAtom);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    if (showSuggestions && suggestions.length > 0) {
+      setSelectedIndex(0);
+    }
+  }, [showSuggestions, suggestions]);
 
   async function handleInputChange(value: string) {
     setCity(value);
@@ -32,7 +39,7 @@ export default function Navbar({}: Props) {
         setSuggestions(suggestions);
         setError('');
         setShowSuggestions(true);
-      } catch  {
+      } catch {
         setSuggestions([]);
         setShowSuggestions(false);
         setError('Erro ao buscar sugestões');
@@ -45,16 +52,16 @@ export default function Navbar({}: Props) {
   }
 
   function handleSuggestionClick(value: string) {
-  const selected = suggestions.find(item => item.name === value);
-  if (selected) {
-    setPlace(`${selected.name}, ${selected.country}`);
-    setCity(selected.name);
-  } else {
-    setPlace(value);
-    setCity(value);
+    const selected = suggestions.find(item => item.name === value);
+    if (selected) {
+      setPlace(`${selected.name}, ${selected.country}`);
+      setCity(selected.name);
+    } else {
+      setPlace(value);
+      setCity(value);
+    }
+    setShowSuggestions(false);
   }
-  setShowSuggestions(false);
-}
 
   function handleSubmitSearch(e: React.FormEvent<HTMLFormElement>) {
     setLoadingCity(true);
@@ -105,19 +112,40 @@ export default function Navbar({}: Props) {
               className="text-2xl text-gray-600 hover:opacity-80 cursor-pointer"
             />
             <MdLocationOn className="text-2xl" />
-            <p className="text-slate-900/80 text-sm font-semibold"> {place} </p>
+            <p className="text-slate-900/80 text-sm font-semibold capitalize">
+              {' '}
+              {place}{' '}
+            </p>
             <div className="relative hidden md:flex">
               <SearchBox
                 value={city}
                 onSubmit={handleSubmitSearch}
                 onChange={e => handleInputChange(e.target.value)}
+                onKeyDown={e => {
+                  if (showSuggestions && suggestions.length > 0) {
+                    if (e.key === 'ArrowDown') {
+                      setSelectedIndex(prev =>
+                        Math.min(prev + 1, suggestions.length - 1)
+                      );
+                    }
+                    if (e.key === 'ArrowUp') {
+                      setSelectedIndex(prev => Math.max(prev - 1, 0));
+                    }
+                    if (e.key === 'Enter') {
+                      handleSuggestionClick(suggestions[selectedIndex].name);
+                      setShowSuggestions(false);
+                      e.preventDefault();
+                    }
+                  }
+                }}
               />
               <SuggestionBox
                 {...{
                   showSuggestions,
                   suggestions,
                   handleSuggestionClick,
-                  error
+                  error,
+                  selectedIndex
                 }}
               />
             </div>
@@ -136,7 +164,8 @@ export default function Navbar({}: Props) {
               showSuggestions,
               suggestions,
               handleSuggestionClick,
-              error
+              error,
+              selectedIndex
             }}
           />
         </div>
@@ -149,17 +178,19 @@ function SuggestionBox({
   showSuggestions,
   suggestions,
   handleSuggestionClick,
-  error
+  error,
+  selectedIndex
 }: {
   showSuggestions: boolean;
   suggestions: { name: string; country: string }[];
   handleSuggestionClick: (item: string) => void;
   error: string;
+  selectedIndex: number;
 }) {
   return (
     <>
       {((showSuggestions && suggestions.length > 1) || error) && (
-        <ul className="mb-4 bg-blue-400 absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px]  flex flex-col gap-1 py-2 px-2">
+        <ul className="mb-4 bg-blue-400 absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px] flex flex-col gap-1 py-2 px-2">
           {error && suggestions.length < 1 && (
             <li className="text-red-500 p-1 "> {error}</li>
           )}
@@ -167,7 +198,9 @@ function SuggestionBox({
             <li
               key={i}
               onClick={() => handleSuggestionClick(item.name)}
-              className="cursor-pointer p-1 rounded   hover:bg-gray-200"
+              className={`cursor-pointer p-1 rounded hover:bg-gray-200 ${
+                selectedIndex === i ? 'bg-blue-200 font-bold' : ''
+              }`}
             >
               {`${item.name}, ${item.country}`}
             </li>
