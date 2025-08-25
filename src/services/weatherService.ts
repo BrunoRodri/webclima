@@ -6,8 +6,8 @@ export async function searchCities(query: string) {
   const response = await axios.get(
     `https://api.openweathermap.org/data/2.5/find?q=${query}&appid=${API_KEY}`
   );
-  
-  return response.data
+
+  return response.data;
 }
 
 export async function getWeatherByCoords(latitude: number, longitude: number) {
@@ -17,16 +17,19 @@ export async function getWeatherByCoords(latitude: number, longitude: number) {
   return response.data;
 }
 
-
 export async function getCitySuggestions(query: string) {
-  const response = await axios.get(
-    `https://api.openweathermap.org/data/2.5/find?q=${query}&appid=${API_KEY}`
-  );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return response.data.list.map((item: any) => ({
-    name: item.name,
-    country: item.sys.country
-  }));
+  try {
+    const response = await axios.get(
+      `https://api.openweathermap.org/data/2.5/find?q=${query}&appid=${API_KEY}`
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return response.data.list.map((item: any) => ({
+      name: item.name,
+      country: item.sys.country
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function getForecastWeather(place: string) {

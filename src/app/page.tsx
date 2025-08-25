@@ -19,7 +19,9 @@ import type { WeatherData } from '@/types/weather';
 
 
 export default function Home() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [place, setPlace] = useAtom(placeAtom);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingCity, setLoadingCity] = useAtom(loadingCityAtom);
 
   const { isLoading, error, data, refetch } = useQuery<WeatherData>({

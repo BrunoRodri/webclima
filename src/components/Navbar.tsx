@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 'use client';
 import React, { useState } from 'react';
 import { MdLocationOn, MdMyLocation, MdWbSunny } from 'react-icons/md';
@@ -12,7 +12,7 @@ import {
 
 type Props = { location?: string };
 
-export default function Navbar({ location }: Props) {
+export default function Navbar({}: Props) {
   const [city, setCity] = useState('');
   const [error, setError] = useState('');
 
@@ -32,13 +32,15 @@ export default function Navbar({ location }: Props) {
         setSuggestions(suggestions);
         setError('');
         setShowSuggestions(true);
-      } catch (error) {
+      } catch  {
         setSuggestions([]);
         setShowSuggestions(false);
+        setError('Erro ao buscar sugestões');
       }
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
+      setError('');
     }
   }
 
@@ -58,7 +60,7 @@ export default function Navbar({ location }: Props) {
     setLoadingCity(true);
     e.preventDefault();
     if (suggestions.length == 0) {
-      setError('Location not found');
+      setError('Localização não encontrada');
       setLoadingCity(false);
     } else {
       setError('');
@@ -66,7 +68,7 @@ export default function Navbar({ location }: Props) {
         setLoadingCity(false);
         setPlace(city);
         setShowSuggestions(false);
-      }, 1000);
+      }, 500);
     }
   }
 
