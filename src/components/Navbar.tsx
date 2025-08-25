@@ -64,20 +64,22 @@ export default function Navbar({}: Props) {
   }
 
   function handleSubmitSearch(e: React.FormEvent<HTMLFormElement>) {
-    setLoadingCity(true);
-    e.preventDefault();
-    if (suggestions.length == 0) {
-      setError('Localização não encontrada');
+  setLoadingCity(true);
+  e.preventDefault();
+
+  if (suggestions.length === 0) {
+    setError('Localização não encontrada');
+    setLoadingCity(false);
+  } else {
+    setError('');
+    // Seleciona a sugestão pré-selecionada (igual ao Enter)
+    handleSuggestionClick(suggestions[selectedIndex].name);
+    setShowSuggestions(false);
+    setTimeout(() => {
       setLoadingCity(false);
-    } else {
-      setError('');
-      setTimeout(() => {
-        setLoadingCity(false);
-        setPlace(city);
-        setShowSuggestions(false);
-      }, 500);
-    }
+    }, 500);
   }
+}
 
   function handleCurrentLocation() {
     if (navigator.geolocation) {
