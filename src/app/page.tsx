@@ -20,9 +20,10 @@ import {
   getUniqueDates,
   getFirstDataForEachDate,
   formatLocalHour,
-  formatDay,
   formatSunTime,
-  getDayMinMax
+  getDayMinMax,
+  formatLocalDate,
+  formatLocalDay
 } from '@/utils/weatherHelpers';
 
 export default function Home() {
@@ -71,10 +72,17 @@ export default function Home() {
             <section className="space-y-4">
               <div className="space-y-2">
                 <h2 className="flex gap-1 text-2xl items-end capitalize font-semibold">
-                  <p>{formatDay(firstData?.dt_txt ?? '')}</p>
+                  <p>
+                    {formatLocalDay(
+                      firstData?.dt ?? 0,
+                      data?.city.timezone ?? 0
+                    )}
+                  </p>
                   <p className="text-lg ">
-                    {' '}
-                    {format(parseISO(firstData?.dt_txt ?? ''), '(dd.MM.yyyy)')}
+                    {formatLocalDate(
+                      firstData?.dt ?? 0,
+                      data?.city.timezone ?? 0
+                    )}
                   </p>
                 </h2>
                 <Container className="gap-10 x-6 items-center">

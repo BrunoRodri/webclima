@@ -54,3 +54,15 @@ export function getDayMinMax(list: any[], date: string) {
 
   return { min, max };
 }
+
+export function formatLocalDay(dt: number, timezone: number) {
+  // dt: timestamp em segundos (UTC)
+  // timezone: diferença em segundos do UTC
+  const localTimestamp = dt + timezone;
+  return format(fromUnixTime(localTimestamp), 'EEEE', { locale: ptBR });
+}
+
+export function formatLocalDate(dt: number, timezone: number) {
+  const localTimestamp = dt + timezone;
+  return format(fromUnixTime(localTimestamp), '(dd.MM.yyyy)');
+}
