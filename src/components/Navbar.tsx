@@ -5,10 +5,12 @@ import { MdLocationOn, MdMyLocation, MdWbSunny } from 'react-icons/md';
 import SearchBox from './SearchBox';
 import { useAtom } from 'jotai';
 import { placeAtom, loadingCityAtom } from '@/app/atom';
-import { getWeatherByCoords, getCitySuggestions } from '@/services/weatherService';
+import {
+  getWeatherByCoords,
+  getCitySuggestions
+} from '@/services/weatherService';
 
 type Props = { location?: string };
-
 
 export default function Navbar({ location }: Props) {
   const [city, setCity] = useState('');
@@ -23,27 +25,34 @@ export default function Navbar({ location }: Props) {
   const [_, setLoadingCity] = useAtom(loadingCityAtom);
 
   async function handleInputChange(value: string) {
-  setCity(value);
-  if (value.length >= 2) {
-    try {
-      const suggestions = await getCitySuggestions(value);
-      setSuggestions(suggestions);
-      setError('');
-      setShowSuggestions(true);
-    } catch (error) {
+    setCity(value);
+    if (value.length >= 2) {
+      try {
+        const suggestions = await getCitySuggestions(value);
+        setSuggestions(suggestions);
+        setError('');
+        setShowSuggestions(true);
+      } catch (error) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } else {
       setSuggestions([]);
       setShowSuggestions(false);
     }
-  } else {
-    setSuggestions([]);
-    setShowSuggestions(false);
   }
-}
 
   function handleSuggestionClick(value: string) {
+  const selected = suggestions.find(item => item.name === value);
+  if (selected) {
+    setPlace(`${selected.name}, ${selected.country}`);
+    setCity(selected.name);
+  } else {
+    setPlace(value);
     setCity(value);
-    setShowSuggestions(false);
   }
+  setShowSuggestions(false);
+}
 
   function handleSubmitSearch(e: React.FormEvent<HTMLFormElement>) {
     setLoadingCity(true);
@@ -62,22 +71,22 @@ export default function Navbar({ location }: Props) {
   }
 
   function handleCurrentLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(async position => {
-      const { latitude, longitude } = position.coords;
-      try {
-        setLoadingCity(true);
-        const data = await getWeatherByCoords(latitude, longitude);
-        setTimeout(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async position => {
+        const { latitude, longitude } = position.coords;
+        try {
+          setLoadingCity(true);
+          const data = await getWeatherByCoords(latitude, longitude);
+          setTimeout(() => {
+            setLoadingCity(false);
+            setPlace(`${data.name}, ${data.sys.country}`);
+          }, 500);
+        } catch (error) {
           setLoadingCity(false);
-          setPlace(data.name);
-        }, 500);
-      } catch (error) {
-        setLoadingCity(false);
-      }
-    });
+        }
+      });
+    }
   }
-}
 
   return (
     <>
@@ -94,7 +103,7 @@ export default function Navbar({ location }: Props) {
               className="text-2xl text-gray-400 hover:opacity-80 cursor-pointer"
             />
             <MdLocationOn className="text-2xl" />
-            <p className="text-slate-900/80 text-sm"> {location} </p>
+            <p className="text-slate-900/80 text-sm"> {place} </p>
             <div className="relative hidden md:flex">
               <SearchBox
                 value={city}
