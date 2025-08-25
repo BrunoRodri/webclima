@@ -17,7 +17,6 @@ import { useEffect } from 'react';
 import { getForecastWeather } from '@/services/weatherService';
 import type { WeatherData } from '@/types/weather';
 
-
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [place, setPlace] = useAtom(placeAtom);
@@ -26,8 +25,8 @@ export default function Home() {
 
   const { isLoading, error, data, refetch } = useQuery<WeatherData>({
     queryKey: ['repoData', place],
-    queryFn: async () =>  {
-      return await getForecastWeather(place);  
+    queryFn: async () => {
+      return await getForecastWeather(place);
     }
   });
 
@@ -44,6 +43,13 @@ export default function Home() {
       )
     )
   ];
+
+  function formatLocalHour(dt: number, timezone: number) {
+    // dt = timestamp em segundos
+    // timezone = diferença em segundos do UTC
+    const localTimestamp = dt + timezone;
+    return format(fromUnixTime(localTimestamp), 'H:mm');
+  }
 
   const firstDataForEachDate = uniqueDates.map(date => {
     return data?.list.find(entry => {
@@ -62,7 +68,7 @@ export default function Home() {
   if (error) return <div>Error fetching data</div>;
 
   return (
-    <div className="flex flex-col gap-4 bg-gray-100 min-h-screen">
+    <div className="flex flex-col gap-4 bg-blue-300 min-h-screen">
       <Navbar location={data?.city.name} />
       <main className="px-3 max-w-7xl mx-auto flex flex-col gap-9  w-full  pb-10 pt-4">
         {loadingCity ? (
@@ -71,7 +77,7 @@ export default function Home() {
           <>
             <section className="space-y-4">
               <div className="space-y-2">
-                <h2 className="flex gap-1 text-2xl items-end capitalize">
+                <h2 className="flex gap-1 text-2xl items-end capitalize font-semibold">
                   <p>
                     {format(parseISO(firstData?.dt_txt ?? ''), 'EEEE', {
                       locale: ptBR
@@ -83,7 +89,7 @@ export default function Home() {
                   </p>
                 </h2>
                 <Container className="gap-10 x-6 items-center">
-                  <div className="flex flex-col px-4">
+                  <div className="flex flex-col px-4 text-center items-center">
                     <span className="text-5xl">
                       {convertKelvinToCelsius(firstData?.main.temp ?? 0)}°C
                     </span>
@@ -103,14 +109,14 @@ export default function Home() {
                       </span>
                     </p>
                   </div>
-                  <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between bg-gray-200">
+                  <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between bg-blue-200v scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-200 custom-scroll">
                     {data?.list.map((d, i) => (
                       <div
                         key={i}
                         className="flex flex-col justify-between gap-2 items-center text-xs font-semibold"
                       >
                         <p className="whitespace-nowrap">
-                          {format(parseISO(d.dt_txt), 'H:mm')}
+                          {formatLocalHour(d.dt, data?.city.timezone ?? 0)}
                         </p>
 
                         {/* <WeatherIcon iconName={d.weather[0].icon}/> */}
@@ -160,7 +166,7 @@ export default function Home() {
             </section>
 
             <section className="flex flex-col gap-4 w-full">
-              <p className="text-2xl ">Previsão (7 dias)</p>
+              <p className="text-2xl font-semibold">Previsão (7 dias)</p>
               {firstDataForEachDate.map((d, i) => (
                 <ForecastWeatherDetail
                   key={i}
