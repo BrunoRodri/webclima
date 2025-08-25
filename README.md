@@ -69,7 +69,7 @@ Durante o desenvolvimento, aprofundei meus conhecimentos em integração com API
 
 ## 📷 Demonstração
 
-*Demonstração do Site-Clima*
+![Site WebClima](image.png)
 
 ---
 
@@ -81,4 +81,4 @@ Este projeto utiliza a [OpenWeather API](https://openweathermap.org/api) para ob
 
 ## 📄 Licença
 
-Este projeto é open-source e está sob a
+Este projeto é open-source e está sob a licença MIT.
