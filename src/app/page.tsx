@@ -44,7 +44,6 @@ export default function Home() {
   }, [place, refetch]);
 
   const firstData = data?.list[0];
-  console.log(data);
 
   const uniqueDates = getUniqueDates(data?.list ?? []);
 

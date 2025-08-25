@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+🌦️ Site-Clima
+Site-Clima é um projeto pessoal de previsão do tempo desenvolvido com tecnologias modernas do ecossistema React. O objetivo é fornecer informações detalhadas sobre o clima atual e a previsão para os próximos dias, com uma interface intuitiva, responsiva e agradável.
 
-## Getting Started
+🚀 Tecnologias Utilizadas
+React
+Next.js (App Router, SSR e Client Components)
+TypeScript
+Tailwind CSS
+Jotai (estado global)
+React Query (@tanstack/react-query)
+date-fns (manipulação de datas)
+OpenWeather API (dados meteorológicos em tempo real)
+⚡ Funcionalidades
+Busca por cidade e localização atual
+Previsão detalhada para até 7 dias
+Horários ajustados para o fuso local da cidade
+Scroll horizontal customizado para visualização das horas
+Skeleton loading para melhor experiência do usuário
+Código organizado com helpers e componentes reutilizáveis
+📦 Instalação
+Clone o repositório:
 
-First, run the development server:
+Instale as dependências:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Crie um arquivo .env.local na raiz do projeto e adicione sua chave da OpenWeather:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Inicie o projeto:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+📝 Como usar
+Digite o nome da cidade na barra de busca ou utilize a localização atual.
+Veja a previsão detalhada do clima para hoje e para os próximos dias.
+Navegue pelo scroll horizontal para visualizar as temperaturas por hora.
+📚 Aprendizados
+Durante o desenvolvimento, aprofundei meus conhecimentos em integração com APIs externas, manipulação de datas, internacionalização, otimização de performance e boas práticas de desenvolvimento frontend.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+📷 Demonstração
+Demonstração do Site-Clima
 
-## Learn More
+🗺️ API
+Este projeto utiliza a OpenWeather API para obter dados meteorológicos.
 
-To learn more about Next.js, take a look at the following resources:
+📄 Licença
+Este projeto é open-source e está sob a licença MIT.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

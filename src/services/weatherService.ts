@@ -39,3 +39,5 @@ export async function getForecastWeather(place: string) {
   );
   return response.data;
 }
+
+
