@@ -5,15 +5,8 @@ import { LuEye, LuSunrise, LuSunset } from "react-icons/lu";
 import { FiDroplet } from "react-icons/fi";
 import { MdAir } from "react-icons/md";
 import { ImMeter } from "react-icons/im";
+import { WeatherDetailProps } from "@/types/weather";
 
-export interface WeatherDetailProps {
-  visability: string;
-  humidity: string;
-  windSpeed: string;
-  airPressure: string;
-  sunrise: string;
-  sunset: string;
-}
 
 export default function WeatherDetails(props: WeatherDetailProps) {
   const {

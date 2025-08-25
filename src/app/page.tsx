@@ -9,68 +9,14 @@ import { convertWindSpeed } from '@/utils/convertWindSpeed';
 import { getDayOrNightIcon } from '@/utils/getDayOrNightIcon';
 import { metersToKilometers } from '@/utils/metersToKilometers';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { format, fromUnixTime, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAtom } from 'jotai';
 import { loadingCityAtom, placeAtom } from './atom';
 import { useEffect } from 'react';
 import { getForecastWeather } from '@/services/weatherService';
+import type { WeatherData } from '@/types/weather';
 
-interface WeatherDetail {
-  dt: number;
-  main: {
-    temp: number;
-    feels_like: number;
-    temp_min: number;
-    temp_max: number;
-    pressure: number;
-    sea_level: number;
-    grnd_level: number;
-    humidity: number;
-    temp_kf: number;
-  };
-  weather: {
-    id: number;
-    main: string;
-    description: string;
-    icon: string;
-  }[];
-  clouds: {
-    all: number;
-  };
-  wind: {
-    speed: number;
-    deg: number;
-    gust: number;
-  };
-  visibility: number;
-  pop: number;
-  sys: {
-    pod: string;
-  };
-  dt_txt: string;
-}
-
-interface WeatherData {
-  cod: string;
-  message: number;
-  cnt: number;
-  list: WeatherDetail[];
-  city: {
-    id: number;
-    name: string;
-    coord: {
-      lat: number;
-      lon: number;
-    };
-    country: string;
-    population: number;
-    timezone: number;
-    sunrise: number;
-    sunset: number;
-  };
-}
 
 export default function Home() {
   const [place, setPlace] = useAtom(placeAtom);
@@ -79,8 +25,7 @@ export default function Home() {
   const { isLoading, error, data, refetch } = useQuery<WeatherData>({
     queryKey: ['repoData', place],
     queryFn: async () =>  {
-      return await getForecastWeather(place);
-      
+      return await getForecastWeather(place);  
     }
   });
 
@@ -89,7 +34,6 @@ export default function Home() {
   }, [place, refetch]);
 
   const firstData = data?.list[0];
-  console.log(data);
 
   const uniqueDates = [
     ...new Set(
