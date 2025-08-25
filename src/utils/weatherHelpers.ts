@@ -42,3 +42,15 @@ export function formatHour(dt_txt: string) {
 export function formatSunTime(unix: number) {
   return format(fromUnixTime(unix), 'HH:mm');
 }
+
+export function getDayMinMax(list: any[], date: string) {
+  // date no formato 'YYYY-MM-DD'
+  const temps = list
+    .filter(item => item.dt_txt.startsWith(date))
+    .map(item => item.main.temp);
+
+  const min = Math.min(...temps);
+  const max = Math.max(...temps);
+
+  return { min, max };
+}

@@ -21,7 +21,8 @@ import {
   getFirstDataForEachDate,
   formatLocalHour,
   formatDay,
-  formatSunTime
+  formatSunTime,
+  getDayMinMax
 } from '@/utils/weatherHelpers';
 
 export default function Home() {
@@ -42,6 +43,7 @@ export default function Home() {
   }, [place, refetch]);
 
   const firstData = data?.list[0];
+  console.log(data);
 
   const uniqueDates = getUniqueDates(data?.list ?? []);
 
@@ -150,29 +152,30 @@ export default function Home() {
 
             <section className="flex flex-col gap-4 w-full">
               <p className="text-2xl font-semibold">Previsão (7 dias)</p>
-              {firstDataForEachDate.map((d, i) => (
-                <ForecastWeatherDetail
-                  key={i}
-                  description={d?.weather[0].description ?? ''}
-                  weatherIcon={d?.weather[0].icon ?? '01d'}
-                  date={d ? format(parseISO(d.dt_txt), 'dd.MM') : ''}
-                  day={
-                    d
-                      ? format(parseISO(d.dt_txt), 'EEEE', { locale: ptBR })
-                      : ''
-                  }
-                  feels_like={d?.main.feels_like ?? 0}
-                  temp={d?.main.temp ?? 0}
-                  temp_max={d?.main.temp_max ?? 0}
-                  temp_min={d?.main.temp_min ?? 0}
-                  airPressure={`${d?.main.pressure} hPa `}
-                  humidity={`${d?.main.humidity}% `}
-                  sunrise={formatSunTime(data?.city.sunrise ?? 1702517657)}
-                  sunset={formatSunTime(data?.city.sunset ?? 1702517657)}
-                  visability={`${metersToKilometers(d?.visibility ?? 10000)} `}
-                  windSpeed={`${convertWindSpeed(d?.wind.speed ?? 1.64)} `}
-                />
-              ))}
+              {firstDataForEachDate.map((d, i) => {
+                if (!d) return null;
+                const date = d.dt_txt.split(' ')[0];
+                const { min, max } = getDayMinMax(data?.list ?? [], date);
+                return (
+                  <ForecastWeatherDetail
+                    key={i}
+                    description={d.weather[0].description ?? ''}
+                    weatherIcon={d.weather[0].icon ?? '01d'}
+                    date={format(parseISO(d.dt_txt), 'dd.MM')}
+                    day={format(parseISO(d.dt_txt), 'EEEE', { locale: ptBR })}
+                    feels_like={d.main.feels_like ?? 0}
+                    temp={d.main.temp ?? 0}
+                    temp_max={max ?? 0}
+                    temp_min={min ?? 0}
+                    airPressure={`${d.main.pressure} hPa `}
+                    humidity={`${d.main.humidity}% `}
+                    sunrise={formatSunTime(data?.city.sunrise ?? 1702517657)}
+                    sunset={formatSunTime(data?.city.sunset ?? 1702517657)}
+                    visability={`${metersToKilometers(d.visibility ?? 10000)} `}
+                    windSpeed={`${convertWindSpeed(d.wind.speed ?? 1.64)} `}
+                  />
+                );
+              })}
             </section>
           </>
         )}
