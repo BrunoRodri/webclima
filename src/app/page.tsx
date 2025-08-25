@@ -15,6 +15,7 @@ import { ptBR } from 'date-fns/locale';
 import { useAtom } from 'jotai';
 import { loadingCityAtom, placeAtom } from './atom';
 import { useEffect } from 'react';
+import { getForecastWeather } from '@/services/weatherService';
 
 interface WeatherDetail {
   dt: number;
@@ -76,12 +77,10 @@ export default function Home() {
   const [loadingCity, setLoadingCity] = useAtom(loadingCityAtom);
 
   const { isLoading, error, data, refetch } = useQuery<WeatherData>({
-    queryKey: ['repoData'],
-    queryFn: async () => {
-      const { data } = await axios.get(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${place}&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}&cnt=56&lang=pt_br`
-      );
-      return data;
+    queryKey: ['repoData', place],
+    queryFn: async () =>  {
+      return await getForecastWeather(place);
+      
     }
   });
 

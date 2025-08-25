@@ -3,13 +3,12 @@
 import React, { useState } from 'react';
 import { MdLocationOn, MdMyLocation, MdWbSunny } from 'react-icons/md';
 import SearchBox from './SearchBox';
-import axios from 'axios';
 import { useAtom } from 'jotai';
 import { placeAtom, loadingCityAtom } from '@/app/atom';
+import { getWeatherByCoords, getCitySuggestions } from '@/services/weatherService';
 
 type Props = { location?: string };
 
-const API_KEY = process.env.NEXT_PUBLIC_WEATHER_KEY;
 
 export default function Navbar({ location }: Props) {
   const [city, setCity] = useState('');
@@ -24,31 +23,22 @@ export default function Navbar({ location }: Props) {
   const [_, setLoadingCity] = useAtom(loadingCityAtom);
 
   async function handleInputChange(value: string) {
-    setCity(value);
-    if (value.length >= 2) {
-      try {
-        const response = await axios.get(
-          `https://api.openweathermap.org/data/2.5/find?q=${value}&appid=${API_KEY}`
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const suggestions = response.data.list.map((item: any) => ({
-          name: item.name,
-          country: item.sys.country
-        }));
-        setSuggestions(suggestions);
-        setError('');
-        setShowSuggestions(true);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    } else {
+  setCity(value);
+  if (value.length >= 2) {
+    try {
+      const suggestions = await getCitySuggestions(value);
+      setSuggestions(suggestions);
+      setError('');
+      setShowSuggestions(true);
+    } catch (error) {
       setSuggestions([]);
       setShowSuggestions(false);
     }
+  } else {
+    setSuggestions([]);
+    setShowSuggestions(false);
   }
+}
 
   function handleSuggestionClick(value: string) {
     setCity(value);
@@ -72,24 +62,22 @@ export default function Navbar({ location }: Props) {
   }
 
   function handleCurrentLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async position => {
-        const { latitude, longitude } = position.coords;
-        try {
-          setLoadingCity(true);
-          const response = await axios.get(
-            `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`
-          );
-          setTimeout(() => {
-            setLoadingCity(false);
-            setPlace(response.data.name);
-          }, 500);
-        } catch (error) {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async position => {
+      const { latitude, longitude } = position.coords;
+      try {
+        setLoadingCity(true);
+        const data = await getWeatherByCoords(latitude, longitude);
+        setTimeout(() => {
           setLoadingCity(false);
-        }
-      });
-    }
+          setPlace(data.name);
+        }, 500);
+      } catch (error) {
+        setLoadingCity(false);
+      }
+    });
   }
+}
 
   return (
     <>
