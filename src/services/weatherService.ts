@@ -1,4 +1,4 @@
-// Busca previsão do tempo por nome da cidade
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function getForecastWeather(place: string) {
   const response = await fetch(`/api/weather?place=${encodeURIComponent(place)}`);
   const data = await response.json();
@@ -7,22 +7,20 @@ export async function getForecastWeather(place: string) {
 
 // Sugestão de cidades
 export async function getCitySuggestions(query: string) {
-  const response = await fetch(`/api/weather?place=${encodeURIComponent(query)}`);
-  const data = await response.json();
-
-  if (!data.results || !data.results.city_name) {
-    return [];
-  }
-
-  const [name, state] = data.results.city_name.split(',').map((s: string) => s.trim());
-
-  // Só mostra sugestão se o nome bater com o que foi digitado (ignorando acentos e caixa)
-  if (name.toLowerCase() !== query.toLowerCase()) {
-    return [];
-  }
-
-  // Retorna apenas cidade e estado
-  return [{ name, state }];
+  const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios');
+  const cidades = await response.json();
+  return cidades
+    .filter((cidade: any) =>
+      cidade.nome
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .includes(query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+    )
+    .slice(0, 10)
+    .map((cidade: any) => ({
+      name: `${cidade.nome}, ${cidade.microrregiao.mesorregiao.UF.sigla}`
+    }));
 }
 
 // Busca previsão do tempo por coordenadas

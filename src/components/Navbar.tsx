@@ -9,6 +9,7 @@ import {
   getWeatherByCoords,
   getCitySuggestions
 } from '@/services/weatherService';
+import { useRouter } from 'next/navigation';
 
 type Props = { location?: string };
 
@@ -16,9 +17,7 @@ export default function Navbar({}: Props) {
   const [city, setCity] = useState('');
   const [error, setError] = useState('');
 
-  const [suggestions, setSuggestions] = useState<
-  { name: string; state: string; }[]
->([]);
+  const [suggestions, setSuggestions] = useState<{ name: string }[]>([]);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [place, setPlace] = useAtom(placeAtom);
@@ -32,52 +31,54 @@ export default function Navbar({}: Props) {
   }, [showSuggestions, suggestions]);
 
   async function handleInputChange(value: string) {
-    setCity(value);
-    if (value.length >= 2) {
-      try {
-        const suggestions = await getCitySuggestions(value);
-        setSuggestions(suggestions);
-        setError('');
-        setShowSuggestions(true);
-      } catch {
-        setSuggestions([]);
-        setShowSuggestions(false);
-        setError('Erro ao buscar sugestões');
-      }
-    } else {
+  setCity(value);
+  if (value.length >= 2) {
+    try {
+      const suggestions = await getCitySuggestions(value);
+      setSuggestions(suggestions);
+      setShowSuggestions(true);
+      setError(suggestions.length === 0 ? 'Cidade não encontrada' : '');
+    } catch {
       setSuggestions([]);
       setShowSuggestions(false);
-      setError('');
+      setError('Erro ao buscar sugestões');
     }
-  }
-
-  function handleSuggestionClick(value: string) {
-  const selected = suggestions.find(item => item.name === value);
-  if (selected) {
-    setPlace(`${selected.name}, ${selected.state}`);
-    setCity(selected.name);
   } else {
-    setPlace(value);
-    setCity(value);
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setError('');
   }
-  setShowSuggestions(false);
 }
 
-  function handleSubmitSearch(e: React.FormEvent<HTMLFormElement>) {
-  setLoadingCity(true);
-  e.preventDefault();
-
-  if (suggestions.length === 0) {
-    setError('Localização não encontrada');
-    setLoadingCity(false);
-  } else {
-    setError('');
-    // Seleciona a sugestão pré-selecionada (igual ao Enter)
-    handleSuggestionClick(suggestions[selectedIndex].name);
+  function handleSuggestionClick(value: string) {
+    const selected = suggestions.find(
+      item => `${item.name}` === value
+    );
+    if (selected) {
+      setPlace(`${selected.name}`);
+      setCity(selected.name);
+    } else {
+      setPlace(value);
+      setCity(value);
+    }
     setShowSuggestions(false);
-    setTimeout(() => {
-      setLoadingCity(false);
-    }, 500);
+  }
+
+
+  function handleSubmitSearch(e: React.FormEvent) {
+  e.preventDefault();
+  // Se há erro, não faz nada
+  if (error) return;
+  if (city.length > 1) {
+    const selected = suggestions.find(
+      item => item.name.toLowerCase() === city.toLowerCase()
+    );
+    if (selected) {
+      setPlace(selected.name);
+    } else {
+      setPlace(city);
+    }
+    setShowSuggestions(false);
   }
 }
 
@@ -90,7 +91,7 @@ export default function Navbar({}: Props) {
           const data = await getWeatherByCoords(latitude, longitude);
           setTimeout(() => {
             setLoadingCity(false);
-            setPlace(`${data.name}, ${data.sys.country}`);
+            setPlace(`${data.results.city}`);
           }, 500);
         } catch {
           setLoadingCity(false);
@@ -184,7 +185,7 @@ function SuggestionBox({
   selectedIndex
 }: {
   showSuggestions: boolean;
-  suggestions: { name: string; state: string; }[];
+  suggestions: { name: string }[];
   handleSuggestionClick: (item: string) => void;
   error: string;
   selectedIndex: number;
@@ -204,7 +205,7 @@ function SuggestionBox({
                 selectedIndex === i ? 'bg-blue-200 font-bold' : ''
               }`}
             >
-              {`${item.name}${item.state ? ', ' + item.state : ''}`}
+              {item.name}
             </li>
           ))}
         </ul>

@@ -10,7 +10,7 @@ import { useAtom } from 'jotai';
 import { loadingCityAtom, placeAtom } from './atom';
 import { useEffect } from 'react';
 import { getForecastWeather } from '@/services/weatherService';
-import { ForecastDay } from '@/types/weatherNew';
+import { ForecastDay } from '@/types/weather';
 import { getWeekdayFromDate } from '@/utils/getWeekdayFromDate';
 import { windSpeedToKmH } from '@/utils/metersToKilometers';
 
@@ -102,7 +102,7 @@ export default function Home() {
             </section>
 
             <section className="flex flex-col gap-4 w-full">
-              <p className="text-2xl font-semibold">Previsão (7 dias)</p>
+              <p className="text-2xl font-semibold">Previsão (14 dias)</p>
               {forecastList.map((d: ForecastDay, i: number) => (
                 <ForecastWeatherDetail
                   key={i}
