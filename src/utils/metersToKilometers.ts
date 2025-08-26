@@ -1,6 +1,6 @@
-/** @format */
-
-export function metersToKilometers(visibilityInMeters: number): string {
-  const visibilityInKilometers = visibilityInMeters / 1000;
-  return `${visibilityInKilometers.toFixed(0)}km`; // Round to 0 decimal places and add 'km' unit
+export function windSpeedToKmH(windSpeed: string): string {
+  const value = parseFloat(windSpeed);
+  // Sempre converte de m/s para km/h e arredonda para inteiro
+  const kmh = Math.round(value * 3.6);
+  return `${kmh} km/h`;
 }

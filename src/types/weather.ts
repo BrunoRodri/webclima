@@ -1,55 +1,46 @@
+
 export interface WeatherDetail {
-  dt: number;
-  main: {
-    temp: number;
-    feels_like: number;
-    temp_min: number;
-    temp_max: number;
-    pressure: number;
-    sea_level: number;
-    grnd_level: number;
-    humidity: number;
-    temp_kf: number;
-  };
-  weather: {
-    id: number;
-    main: string;
-    description: string;
-    icon: string;
-  }[];
-  clouds: {
-    all: number;
-  };
-  wind: {
-    speed: number;
-    deg: number;
-    gust: number;
-  };
-  visibility: number;
-  pop: number;
-  sys: {
-    pod: string;
-  };
-  dt_txt: string;
+  date: string;
+  full_date: string;
+  weekday: string;
+  max: number;
+  min: number;
+  humidity: string;
+  cloudiness: number;
+  rain: number;
+  rain_probability: number | string;
+  wind_speedy: string;
+  sunrise: string;
+  sunset: string;
+  moon_phase: string;
+  description: string;
+  weathericon: string;
 }
 
 export interface WeatherData {
-  cod: string;
-  message: number;
-  cnt: number;
-  list: WeatherDetail[];
-  city: {
-    id: number;
-    name: string;
-    coord: {
-      lat: number;
-      lon: number;
-    };
-    country: string;
-    population: number;
-    timezone: number;
-    sunrise: number;
-    sunset: number;
+  results: {
+    temp: number;
+    date: string;
+    time: string;
+    condition_code: string;
+    description: string;
+    currently: string;
+    cid: string;
+    city: string;
+    img_id: string;
+    humidity: number;
+    cloudiness: number;
+    rain: number;
+    wind_speedy: string;
+    wind_direction: number;
+    wind_cardinal: string;
+    sunrise: string;
+    sunset: string;
+    moon_phase: string;
+    condition_slug: string;
+    city_name: string;
+    timezone: string;
+    forecast: WeatherDetail[];
   };
 }
 
@@ -65,10 +56,10 @@ export interface ForecastWeatherDetailProps extends WeatherDetailProps {
 }
 
 export interface WeatherDetailProps {
-  visability: string;
   humidity: string;
   windSpeed: string;
-  airPressure: string;
   sunrise: string;
   sunset: string;
+  rainProbability?: string | number;
+
 }

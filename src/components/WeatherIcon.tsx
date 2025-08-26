@@ -16,7 +16,7 @@ export default function WeatherIcon(
         height={100}
         alt="weather-icon"
         className="absolute h-full w-full"
-        src={`https://openweathermap.org/img/wn/${iconName}@4x.png`}
+        src={`https://assets.hgbrasil.com/weather/icons/conditions/${iconName}.svg`}
       />
     </div>
   );

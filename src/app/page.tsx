@@ -1,38 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 import Container from '@/components/Container';
 import ForecastWeatherDetail from '@/components/ForecastWeatherDetail';
 import Navbar from '@/components/Navbar';
 import WeatherDetails from '@/components/WeatherDetails';
 import WeatherIcon from '@/components/WeatherIcon';
-import { convertKelvinToCelsius } from '@/utils/convertKelvinToCelcius';
-import { convertWindSpeed } from '@/utils/convertWindSpeed';
-import { getDayOrNightIcon } from '@/utils/getDayOrNightIcon';
-import { metersToKilometers } from '@/utils/metersToKilometers';
 import { useQuery } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useAtom } from 'jotai';
 import { loadingCityAtom, placeAtom } from './atom';
 import { useEffect } from 'react';
 import { getForecastWeather } from '@/services/weatherService';
-import type { WeatherData } from '@/types/weather';
-import {
-  getUniqueDates,
-  getFirstDataForEachDate,
-  formatLocalHour,
-  formatSunTime,
-  getDayMinMax,
-  formatLocalDate,
-  formatLocalDay
-} from '@/utils/weatherHelpers';
+import { ForecastDay } from '@/types/weatherNew';
+import { getWeekdayFromDate } from '@/utils/getWeekdayFromDate';
+import { windSpeedToKmH } from '@/utils/metersToKilometers';
 
 export default function Home() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [place, setPlace] = useAtom(placeAtom);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingCity, setLoadingCity] = useAtom(loadingCityAtom);
 
-  const { isLoading, error, data, refetch } = useQuery<WeatherData>({
+  const { isLoading, error, data, refetch } = useQuery({
     queryKey: ['repoData', place],
     queryFn: async () => {
       return await getForecastWeather(place);
@@ -43,14 +29,10 @@ export default function Home() {
     refetch();
   }, [place, refetch]);
 
-  const firstData = data?.list[0];
-
-  const uniqueDates = getUniqueDates(data?.list ?? []);
-
-  const firstDataForEachDate = getFirstDataForEachDate(
-    data?.list ?? [],
-    uniqueDates
-  );
+  // Dados principais
+  const mainData = data?.results;
+  const forecastList: ForecastDay[] = mainData?.forecast ?? [];
+  // console.log(forecastList);
 
   if (isLoading)
     return (
@@ -62,8 +44,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-4 bg-blue-300 min-h-screen">
-      <Navbar location={data?.city.name} />
-      <main className="px-3 max-w-7xl mx-auto flex flex-col gap-9  w-full  pb-10 pt-4">
+      <Navbar location={`${mainData?.city}`} />
+      <main className="px-3 max-w-7xl mx-auto flex flex-col gap-9 w-full pb-10 pt-4">
         {loadingCity ? (
           <WeatherSkeleton />
         ) : (
@@ -71,59 +53,29 @@ export default function Home() {
             <section className="space-y-4">
               <div className="space-y-2">
                 <h2 className="flex gap-1 text-2xl items-end capitalize font-semibold">
-                  <p>
-                    {formatLocalDay(
-                      firstData?.dt ?? 0,
-                      data?.city.timezone ?? 0
-                    )}
-                  </p>
-                  <p className="text-lg ">
-                    {formatLocalDate(
-                      firstData?.dt ?? 0,
-                      data?.city.timezone ?? 0
-                    )}
-                  </p>
+                  <p>{getWeekdayFromDate(mainData.date)}</p>
+                  <p className="text-lg ">{mainData?.date}</p>
                 </h2>
                 <Container className="gap-10 x-6 items-center">
                   <div className="flex flex-col px-4 text-center items-center">
-                    <span className="text-5xl">
-                      {convertKelvinToCelsius(firstData?.main.temp ?? 0)}°C
-                    </span>
-                    <p className="text-xs space-x-1 whitespace-nowrap">
-                      Sensação{' '}
-                      {convertKelvinToCelsius(firstData?.main.feels_like ?? 0)}
-                      °C
-                    </p>
+                    <span className="text-5xl">{mainData?.temp}°C</span>
+
                     <p className="text-xs space-x-2">
-                      <span>
-                        {convertKelvinToCelsius(firstData?.main.temp_min ?? 0)}
-                        °C ↓
-                      </span>
-                      <span>
-                        {convertKelvinToCelsius(firstData?.main.temp_max ?? 0)}
-                        °C ↑
-                      </span>
+                      <span>{forecastList[0]?.min}°C ↓</span>
+                      <span>{forecastList[0]?.max}°C ↑</span>
                     </p>
                   </div>
                   <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between bg-blue-200v scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-200 custom-scroll">
-                    {data?.list.map((d, i) => (
+                    {forecastList.map((d: ForecastDay, i: number) => (
                       <div
                         key={i}
                         className="flex flex-col justify-between gap-2 items-center text-xs font-semibold"
                       >
-                        <p className="whitespace-nowrap">
-                          {formatLocalHour(d.dt, data?.city.timezone ?? 0)}
+                        <p className="whitespace-nowrap">{d.date}</p>
+                        <WeatherIcon iconName={d.condition} />
+                        <p>
+                          {d.min}°C / {d.max}°C
                         </p>
-
-                        {/* <WeatherIcon iconName={d.weather[0].icon}/> */}
-                        <WeatherIcon
-                          iconName={getDayOrNightIcon(
-                            d.weather[0].icon,
-                            d.dt,
-                            data.city.timezone ?? 0
-                          )}
-                        />
-                        <p>{convertKelvinToCelsius(d?.main.temp ?? 0)}°C</p>
                       </div>
                     ))}
                   </div>
@@ -133,56 +85,45 @@ export default function Home() {
                 {/* Left */}
                 <Container className="w-fit justify-center flex-col px-4 items-center bg-amber-300">
                   <p className="capitalize text-center font-semibold">
-                    {firstData?.weather[0].description}
+                    {mainData?.description}
                   </p>
-                  <WeatherIcon
-                    iconName={getDayOrNightIcon(
-                      firstData?.weather[0].icon ?? '',
-                      firstData?.dt ?? 0,
-                      data?.city?.timezone ?? 0
-                    )}
-                  />
+                  <WeatherIcon iconName={mainData?.condition_slug} />
                 </Container>
                 <Container className="px-6 gap-4 justify-between overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-200 custom-scroll">
                   <WeatherDetails
-                    visability={metersToKilometers(firstData?.visibility ?? 0)}
-                    airPressure={`${firstData?.main.pressure} hPa`}
-                    humidity={`${firstData?.main.humidity}%`}
-                    windSpeed={convertWindSpeed(firstData?.wind.speed ?? 0)}
-                    sunrise={formatSunTime(data?.city.sunrise ?? 0)}
-                    sunset={formatSunTime(data?.city.sunset ?? 0)}
+                    humidity={`${mainData?.humidity}%`}
+                    rainProbability={`${forecastList[0]?.rain_probability} %`}
+                    windSpeed={`${windSpeedToKmH(mainData?.wind_speedy)}`}
+                    sunrise={mainData?.sunrise}
+                    sunset={mainData?.sunset}
                   />
                 </Container>
-                {/* Right  */}
               </div>
             </section>
 
             <section className="flex flex-col gap-4 w-full">
               <p className="text-2xl font-semibold">Previsão (7 dias)</p>
-              {firstDataForEachDate.map((d, i) => {
-                if (!d) return null;
-                const date = d.dt_txt.split(' ')[0];
-                const { min, max } = getDayMinMax(data?.list ?? [], date);
-                return (
-                  <ForecastWeatherDetail
-                    key={i}
-                    description={d.weather[0].description ?? ''}
-                    weatherIcon={d.weather[0].icon ?? '01d'}
-                    date={format(parseISO(d.dt_txt), 'dd.MM')}
-                    day={format(parseISO(d.dt_txt), 'EEEE', { locale: ptBR })}
-                    feels_like={d.main.feels_like ?? 0}
-                    temp={d.main.temp ?? 0}
-                    temp_max={max ?? 0}
-                    temp_min={min ?? 0}
-                    airPressure={`${d.main.pressure} hPa `}
-                    humidity={`${d.main.humidity}% `}
-                    sunrise={formatSunTime(data?.city.sunrise ?? 1702517657)}
-                    sunset={formatSunTime(data?.city.sunset ?? 1702517657)}
-                    visability={`${metersToKilometers(d.visibility ?? 10000)} `}
-                    windSpeed={`${convertWindSpeed(d.wind.speed ?? 1.64)} `}
-                  />
-                );
-              })}
+              {forecastList.map((d: ForecastDay, i: number) => (
+                <ForecastWeatherDetail
+                  key={i}
+                  description={d.description}
+                  weathericon={d.condition}
+                  date={d.date}
+                  weekday={d.weekday}
+                  temp={d.max}
+                  max={d.max}
+                  min={d.min}
+                  humidity={`${d?.humidity}%`}
+                  sunrise={d?.sunrise}
+                  sunset={d?.sunset}
+                  wind_speedy={windSpeedToKmH(d?.wind_speedy)}
+                  full_date={d.full_date}
+                  cloudiness={d.cloudiness}
+                  rain={d.rain}
+                  rain_probability={`${d.rain_probability}%`}
+                  moon_phase={d.moon_phase}
+                />
+              ))}
             </section>
           </>
         )}

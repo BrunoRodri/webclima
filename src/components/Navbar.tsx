@@ -17,8 +17,8 @@ export default function Navbar({}: Props) {
   const [error, setError] = useState('');
 
   const [suggestions, setSuggestions] = useState<
-    { name: string; country: string }[]
-  >([]);
+  { name: string; state: string; }[]
+>([]);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [place, setPlace] = useAtom(placeAtom);
@@ -52,16 +52,16 @@ export default function Navbar({}: Props) {
   }
 
   function handleSuggestionClick(value: string) {
-    const selected = suggestions.find(item => item.name === value);
-    if (selected) {
-      setPlace(`${selected.name}, ${selected.country}`);
-      setCity(selected.name);
-    } else {
-      setPlace(value);
-      setCity(value);
-    }
-    setShowSuggestions(false);
+  const selected = suggestions.find(item => item.name === value);
+  if (selected) {
+    setPlace(`${selected.name}, ${selected.state}`);
+    setCity(selected.name);
+  } else {
+    setPlace(value);
+    setCity(value);
   }
+  setShowSuggestions(false);
+}
 
   function handleSubmitSearch(e: React.FormEvent<HTMLFormElement>) {
   setLoadingCity(true);
@@ -184,14 +184,14 @@ function SuggestionBox({
   selectedIndex
 }: {
   showSuggestions: boolean;
-  suggestions: { name: string; country: string }[];
+  suggestions: { name: string; state: string; }[];
   handleSuggestionClick: (item: string) => void;
   error: string;
   selectedIndex: number;
 }) {
   return (
     <>
-      {((showSuggestions && suggestions.length > 1) || error) && (
+      {((showSuggestions && suggestions.length > 0) || error) && (
         <ul className="mb-4 bg-blue-400 absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px] flex flex-col gap-1 py-2 px-2">
           {error && suggestions.length < 1 && (
             <li className="text-red-500 p-1 "> {error}</li>
@@ -204,7 +204,7 @@ function SuggestionBox({
                 selectedIndex === i ? 'bg-blue-200 font-bold' : ''
               }`}
             >
-              {`${item.name}, ${item.country}`}
+              {`${item.name}${item.state ? ', ' + item.state : ''}`}
             </li>
           ))}
         </ul>
