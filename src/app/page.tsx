@@ -74,7 +74,7 @@ export default function Home() {
                         <p className="whitespace-nowrap">{d.date}</p>
                         <WeatherIcon iconName={d.condition} />
                         <p>
-                          {d.min}°C / {d.max}°C
+                          <span className='text-[16px] font-bold'>↓</span>{d.min}°C / <span className='text-[16px] font-bold'>↑</span>{d.max}°C
                         </p>
                       </div>
                     ))}
