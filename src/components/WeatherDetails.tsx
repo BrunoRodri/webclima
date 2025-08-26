@@ -1,44 +1,37 @@
 /** @format */
 
 import React from "react";
-import { LuEye, LuSunrise, LuSunset } from "react-icons/lu";
+import { LuSunrise, LuSunset } from "react-icons/lu";
 import { FiDroplet } from "react-icons/fi";
 import { MdAir } from "react-icons/md";
-import { ImMeter } from "react-icons/im";
 import { WeatherDetailProps } from "@/types/weather";
 
 
 export default function WeatherDetails(props: WeatherDetailProps) {
   const {
-    visability = "25km",
-    humidity = "61%",
-    windSpeed = "7 km/h",
-    airPressure = "1012 hPa",
-    sunrise = "6.20",
-    sunset = "18:48"
+    humidity, 
+    windSpeed, 
+    sunrise ,
+    sunset ,
+    rainProbability
   } = props;
 
   return (
     <div className="flex gap-6 md:gap-12 lg:gap-20 py-4 text-center w-full  justify-between">
-      <SingleWeatherDetail
-        icon={<LuEye />}
-        information="Visibilidade"
-        value={visability}
-      />
       <SingleWeatherDetail
         icon={<FiDroplet />}
         information="Humidade"
         value={humidity}
       />
       <SingleWeatherDetail
+        icon={<FiDroplet />}
+        information="Prob. de Chuva"
+        value={rainProbability ?? 0}
+      />
+      <SingleWeatherDetail
         icon={<MdAir />}
         information="Vento"
         value={windSpeed}
-      />
-      <SingleWeatherDetail
-        icon={<ImMeter />}
-        information="Pressão do ar"
-        value={airPressure}
       />
       <SingleWeatherDetail
         icon={<LuSunrise />}
@@ -57,7 +50,7 @@ export default function WeatherDetails(props: WeatherDetailProps) {
 export interface SingleWeatherDetailProps {
   information: string;
   icon: React.ReactNode;
-  value: string;
+  value: number | string;
 }
 
 function SingleWeatherDetail(props: SingleWeatherDetailProps) {

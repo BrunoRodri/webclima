@@ -9,6 +9,7 @@ import {
   getWeatherByCoords,
   getCitySuggestions
 } from '@/services/weatherService';
+import { useRouter } from 'next/navigation';
 
 type Props = { location?: string };
 
@@ -16,9 +17,7 @@ export default function Navbar({}: Props) {
   const [city, setCity] = useState('');
   const [error, setError] = useState('');
 
-  const [suggestions, setSuggestions] = useState<
-    { name: string; country: string }[]
-  >([]);
+  const [suggestions, setSuggestions] = useState<{ name: string }[]>([]);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [place, setPlace] = useAtom(placeAtom);
@@ -32,29 +31,31 @@ export default function Navbar({}: Props) {
   }, [showSuggestions, suggestions]);
 
   async function handleInputChange(value: string) {
-    setCity(value);
-    if (value.length >= 2) {
-      try {
-        const suggestions = await getCitySuggestions(value);
-        setSuggestions(suggestions);
-        setError('');
-        setShowSuggestions(true);
-      } catch {
-        setSuggestions([]);
-        setShowSuggestions(false);
-        setError('Erro ao buscar sugestões');
-      }
-    } else {
+  setCity(value);
+  if (value.length >= 2) {
+    try {
+      const suggestions = await getCitySuggestions(value);
+      setSuggestions(suggestions);
+      setShowSuggestions(true);
+      setError(suggestions.length === 0 ? 'Cidade não encontrada' : '');
+    } catch {
       setSuggestions([]);
       setShowSuggestions(false);
-      setError('');
+      setError('Erro ao buscar sugestões');
     }
+  } else {
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setError('');
   }
+}
 
   function handleSuggestionClick(value: string) {
-    const selected = suggestions.find(item => item.name === value);
+    const selected = suggestions.find(
+      item => `${item.name}` === value
+    );
     if (selected) {
-      setPlace(`${selected.name}, ${selected.country}`);
+      setPlace(`${selected.name}`);
       setCity(selected.name);
     } else {
       setPlace(value);
@@ -63,21 +64,21 @@ export default function Navbar({}: Props) {
     setShowSuggestions(false);
   }
 
-  function handleSubmitSearch(e: React.FormEvent<HTMLFormElement>) {
-  setLoadingCity(true);
-  e.preventDefault();
 
-  if (suggestions.length === 0) {
-    setError('Localização não encontrada');
-    setLoadingCity(false);
-  } else {
-    setError('');
-    // Seleciona a sugestão pré-selecionada (igual ao Enter)
-    handleSuggestionClick(suggestions[selectedIndex].name);
+  function handleSubmitSearch(e: React.FormEvent) {
+  e.preventDefault();
+  // Se há erro, não faz nada
+  if (error) return;
+  if (city.length > 1) {
+    const selected = suggestions.find(
+      item => item.name.toLowerCase() === city.toLowerCase()
+    );
+    if (selected) {
+      setPlace(selected.name);
+    } else {
+      setPlace(city);
+    }
     setShowSuggestions(false);
-    setTimeout(() => {
-      setLoadingCity(false);
-    }, 500);
   }
 }
 
@@ -90,7 +91,7 @@ export default function Navbar({}: Props) {
           const data = await getWeatherByCoords(latitude, longitude);
           setTimeout(() => {
             setLoadingCity(false);
-            setPlace(`${data.name}, ${data.sys.country}`);
+            setPlace(`${data.results.city}`);
           }, 500);
         } catch {
           setLoadingCity(false);
@@ -184,14 +185,14 @@ function SuggestionBox({
   selectedIndex
 }: {
   showSuggestions: boolean;
-  suggestions: { name: string; country: string }[];
+  suggestions: { name: string }[];
   handleSuggestionClick: (item: string) => void;
   error: string;
   selectedIndex: number;
 }) {
   return (
     <>
-      {((showSuggestions && suggestions.length > 1) || error) && (
+      {((showSuggestions && suggestions.length > 0) || error) && (
         <ul className="mb-4 bg-blue-400 absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px] flex flex-col gap-1 py-2 px-2">
           {error && suggestions.length < 1 && (
             <li className="text-red-500 p-1 "> {error}</li>
@@ -204,7 +205,7 @@ function SuggestionBox({
                 selectedIndex === i ? 'bg-blue-200 font-bold' : ''
               }`}
             >
-              {`${item.name}, ${item.country}`}
+              {item.name}
             </li>
           ))}
         </ul>

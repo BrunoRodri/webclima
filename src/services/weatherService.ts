@@ -1,43 +1,31 @@
-import axios from 'axios';
-
-const API_KEY = process.env.NEXT_PUBLIC_WEATHER_KEY;
-
-
-export async function searchCities(query: string) {
-  const response = await axios.get(
-    `https://api.openweathermap.org/data/2.5/find?q=${query}&appid=${API_KEY}&lang=pt_br`
-  );
-
-  return response.data;
-}
-
-export async function getWeatherByCoords(latitude: number, longitude: number) {
-  const response = await axios.get(
-    `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&lang=pt_br`
-  );
-  return response.data;
-}
-
-export async function getCitySuggestions(query: string) {
-  try {
-    const response = await axios.get(
-      `https://api.openweathermap.org/data/2.5/find?q=${query}&appid=${API_KEY}&lang=pt_br`
-    );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return response.data.list.map((item: any) => ({
-      name: item.name,
-      country: item.sys.country
-    }));
-  } catch {
-    return [];
-  }
-}
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function getForecastWeather(place: string) {
-  const response = await axios.get(
-    `https://api.openweathermap.org/data/2.5/forecast?q=${place}&appid=${API_KEY}&cnt=56&lang=pt_br`
-  );
-  return response.data;
+  const response = await fetch(`/api/weather?place=${encodeURIComponent(place)}`);
+  const data = await response.json();
+  return data;
 }
 
+// Sugestão de cidades
+export async function getCitySuggestions(query: string) {
+  const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios');
+  const cidades = await response.json();
+  return cidades
+    .filter((cidade: any) =>
+      cidade.nome
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .includes(query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+    )
+    .slice(0, 10)
+    .map((cidade: any) => ({
+      name: `${cidade.nome}, ${cidade.microrregiao.mesorregiao.UF.sigla}`
+    }));
+}
 
+// Busca previsão do tempo por coordenadas
+export async function getWeatherByCoords(latitude: number, longitude: number) {
+  const response = await fetch(`/api/weather?lat=${latitude}&lon=${longitude}`);
+  const data = await response.json();
+  return data;
+}
